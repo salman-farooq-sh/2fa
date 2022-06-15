@@ -659,3 +659,6 @@ Complete code for the backend is available [here](https://github.com/SalmanFaroo
 ## On to the Front-End…
 _Coming soon_
 
+---
+
+_Originally authored by me for [esketchers](https://esketchers.com/) at [esketchers.com/implementing-2fa-with-mern-stack/](https://esketchers.com/implementing-2fa-with-mern-stack/)._
