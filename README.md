@@ -1,11 +1,10 @@
-
 # Two-Factor/Multi-Factor Authentication: A Complete Front-End and Back-End Guide Using the MERN Stack and Google Authenticator
 
 Two-Factor Authentication (2FA), also called Multi-Factor Authentication (MFA), is an open-source standard that greatly enhances user security while being pretty straightforward to implement. Many of the world’s top websites employ this simple yet powerful security measure when logging-in their users.
 
 ## How does it work?
 
-In addition to the usual ID and password pair, you are required to provide an additional secret code, usually 6-digits, to login which you obtain from an authenticator application (e.g. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) or [this Chrome extension](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai)) installed in your phone or web browser which you have registered with the platform or website you are logging into by simply scanning a QR code. After the initial registration step, the authenticator app doesn’t even need to be online to give you the required secret OTP. Magic! Right?
+In addition to the usual ID and password pair, you are required to provide an additional secret code, usually 6-digit long, to login which you obtain from an authenticator application (e.g. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) or [this Chrome extension](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai)) installed in your phone or web browser which you have registered with the platform or website you are logging into by simply scanning a QR code. After the initial registration step, the authenticator app doesn’t even need to be online to give you the required secret OTP. Magic! Right?
 
 As it is with all things in computer science, it turns out it is not magic, rather it is only some solid logic. At the heart of 2FA/MFA, the kind we are going to implement, are two cryptographic algorithms. The first algorithm when simplified takes as input three things:
 
@@ -28,7 +27,7 @@ Before starting, make sure you have a recent version of the following installed 
 
 ## So let’s start!
 
-Begin by creating a new empty directory called 2fa which will hold the code for both our Express backend and React frontend. We will start with the backend and test it with Postman as we go. Create another directory called backend inside 2fa and run this in it:
+Begin by creating a new empty directory called `2fa` which will hold the code for both our Express backend and React frontend. We will start with the backend and test it with Postman as we go. Create another directory called `backend` inside `2fa` and run this in it:
 
 ```
 npm init -y
@@ -174,7 +173,7 @@ const UserModel = mongoose.model("user", UserSchema);
 module.exports = { UserModel };
 ```
 
-We use mongoose to simplify our interaction with MongoDB. UserSchema contains all the necessary fields we will need to make a functioning example, one of which is optional and represents any extra data we would want to attach to a user; the age field. Other such fields can be added or removed as required. We also define a method on the schema to compare passwords. 
+We use mongoose to simplify our interaction with MongoDB. `UserSchema` contains all the necessary fields we will need to make a functioning example, one of which is optional and represents any extra data we would want to attach to a user; the age field. Other such fields can be added or removed as required. We also define a method on the schema to compare passwords. 
 
 Next up, we will write the logic to create a new user, create `auth.js` with this in it:
 
@@ -316,7 +315,7 @@ module.exports = {
 };
 ```
 
-This controller receives a user object in the parameters which is supplied by the login passport middleware. It returns a matching response on invalid email or password. If the email and password are valid, it returns the final authentication JWT if Two-Factor Authentication is not enabled and if it is enabled, it returns an intermediate step-2 JWT which is required for verifying that we are coming to login step-2 after having completed the login step-1 properly, it does not function as the final authentication JWT.
+This controller receives a user object in the parameters which is supplied by the `login` passport middleware. It returns a matching response on invalid email or password. If the email and password are valid, it returns the final authentication JWT if Two-Factor Authentication is not enabled and if it is enabled, it returns an intermediate step-2 JWT which is required for verifying that we are coming to login step-2 after having completed the login step-1 properly, it does not function as the final authentication JWT.
 
 Create the missing login passport middleware at the end of `auth.js`:
 
