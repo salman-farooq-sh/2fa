@@ -661,4 +661,4 @@ _Coming soon_
 
 ---
 
-_Originally authored by me for [esketchers](https://esketchers.com/) at [esketchers.com/implementing-2fa-with-mern-stack/](https://esketchers.com/implementing-2fa-with-mern-stack/)_
+_Originally authored by me for [esketchers](https://esketchers.com/) at [esketchers.com/implementing-2fa-with-mern-stack](https://esketchers.com/implementing-2fa-with-mern-stack/)_
