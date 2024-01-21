@@ -11,7 +11,7 @@ As it is with all things in computer science, it turns out it is not magic, rath
 1. The current time on the clock accurate to the second
 2. A user-specific permanent secret key (separate from the OTP, shared securely during setup)
 
-It uses these two things to generate a time-sensitive OTP usually consisting of 6 digits. By having the back-end server and the authenticor app share this permanent secret and their clocks (thanks to NTP in most cases), the authenticator app's claim of possessing the secret previously shared by the server can be verified without sharing the secret directly. This claim is used for user authentication. Usually the OTP is confirmed from the user one time before enabling 2FA for their account to ensure that the secret contained in the QR code has been properly set up in their authenticator app, saving the user from getting locked out of their account in case it isn't doesn't work.
+It uses these two things to generate a time-sensitive OTP usually consisting of 6 digits. By having the back-end server and the authenticor app share this permanent secret and their clocks (thanks to NTP in most cases), the authenticator app's claim of possessing the secret previously shared by the server can be verified without sharing the secret directly. This claim is used for user authentication. Usually the OTP is confirmed from the user one time before enabling 2FA for their account to ensure that the secret contained in the QR code has been properly set up in their authenticator app, saving the user from getting locked out of their account in case it doesn't work.
 
 ## Prerequisites for this tutorial
 
