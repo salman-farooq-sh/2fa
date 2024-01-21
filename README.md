@@ -15,7 +15,7 @@ It uses these two things to generate a time-sensitive OTP usually consisting of 
 
 ## Prerequisites for this tutorial
 
-Before starting, make sure you have a recent version of the following installed and set up:
+Before we start, make sure you have a recent version of the following installed and set up:
 
 1. Node.js
 2. MongoDB
