@@ -1,47 +1,44 @@
-# Two-Factor/Multi-Factor Authentication: A Complete Front-End and Back-End Guide Using the MERN Stack and Google Authenticator
+# Two-Factor Authentication: A Front-End and Back-End Guide Using Google Authenticator and MERN Stack
 
-Two-Factor Authentication (2FA), also called Multi-Factor Authentication (MFA), is an open-source standard that greatly enhances user security while being pretty straightforward to implement. Many of the world’s top websites employ this simple yet powerful security measure when logging-in their users.
+Two-factor authentication (2FA), also called multi-factor authentication (MFA), is an open-source standard that greatly enhances user security while being straightforward to implement. Many of the world’s top websites employ this simple yet powerful security measure when logging in their users.
 
 ## How does it work?
 
-In addition to the usual ID and password pair, you are required to provide an additional secret code, usually 6-digit long, to login which you obtain from an authenticator application (e.g. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) or [this Chrome extension](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai)) installed in your phone or web browser which you have registered with the platform or website you are logging into by simply scanning a QR code. After the initial registration step, the authenticator app doesn’t even need to be online to give you the required secret OTP. Magic! Right?
+In addition to the usual username and password pair, you are required to provide an additional secret code, usually 6-digit long, to log in which you obtain from an authenticator application (e.g. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) or [this Chrome extension](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai)) installed in your phone or web browser which you have registered with the platform or website you are logging into by simply scanning a QR code. After the initial setup, the authenticator app doesn’t even need to be online to give you the required secret one-time password (OTP). Magic! Right?
 
-As it is with all things in computer science, it turns out it is not magic, rather it is only some solid logic. At the heart of 2FA/MFA, the kind we are going to implement, are two cryptographic algorithms. The first algorithm when simplified takes as input three things:
+As it is with all things in computer science, it turns out it is not magic, rather it is some interesting logic. At the heart of 2FA/MFA, the kind we are going to implement, is a cryptographic algorithm. The algorithm takes as input two things:
 
-1. The current approximate time on the clock
-2. A user specific secret key
-3. And an OTP usually consisting of 6 digits
+1. The current time on the clock accurate to the second
+2. A user-specific permanent secret key (separate from the OTP, shared securely during setup)
 
-Its output is a simple yes or no specifying the validity of the input triplet. The second algorithm is similar to the first one except that instead of taking an OTP as the third input, it spits one out.
-
-Thus, by having a server and a client which share the clock and a secret, the client’s claim of possessing the secret previously shared by the server can be verified without actually sharing the secret. This secret can then be used for user authentication.
+It uses these two things to generate a time-sensitive OTP usually consisting of 6 digits. By having the back-end server and the authenticor app share this permanent secret and their clocks (thanks to NTP in most cases), the authenticator app's claim of possessing the secret previously shared by the server can be verified without sharing the secret directly. This claim is used for user authentication. Usually the OTP is confirmed from the user one time before enabling 2FA for their account to ensure that the secret contained in the QR code has been properly set up in their authenticator app, saving the user from getting locked out of their account in case it isn't doesn't work.
 
 ## Prerequisites for this tutorial
 
 Before starting, make sure you have a recent version of the following installed and set up:
 
-1. [Node.js](https://nodejs.dev/en/learn/how-to-install-nodejs/)
-2. [MongoDB](https://www.mongodb.com/docs/manual/administration/install-community/)
-3. [Postman](https://www.postman.com/downloads/) with [this collection](https://github.com/salman-farooq-sh/2fa/blob/main/backend/postman/Express-2FA.postman_collection.json) imported
-4. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) (or a [similar](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai) app)
+1. Node.js
+2. MongoDB
+3. Postman with [this collection](https://github.com/salman-farooq-sh/2fa/blob/main/backend/postman/Express-2FA.postman_collection.json) imported (tip: drag and drop this file in Postman)
+4. Google Authenticator (or any other similar app e.g. [this one](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai), the keyword to search for is "[TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password)")
 
 ## So let’s start!
 
 Begin by creating a new empty directory called `2fa` which will hold the code for both our Express backend and React frontend. We will start with the backend and test it with Postman as we go. Create another directory called `backend` inside `2fa` and run this in it:
 
-```
+```bash
 npm init -y
 ```
 
-This will initialize the project by creating a brand new `package.json` file in the project root with default values. Next, install the packages we will be using:
+This will initialize the project by creating a brand new `package.json` file in the back-end project root with default values. Next, install the packages we will be using:
 
-```
+```bash
 npm install bcrypt cors express jsonwebtoken mongoose otplib passport passport-jwt passport-local qrcode
 ```
 
-All these packages will be installed in the project’s newly created `node_modules` folder which you can inspect with your file explorer if you are curious. Now create and open a file called `index.js` in the project root which will be the entry point for our code and put this in it:
+All these packages will be installed in the project's newly created `node_modules` folder which you can inspect with your file explorer if you are curious. Now create and open a file called `index.js` in the project root which will be the entry point for our code and put this in it:
 
-```
+```javascript
 const express = require("express");
 
 const PORT = 9001;
@@ -60,17 +57,17 @@ app.listen(PORT, () =>
 
 And then run it with:
 
-```
+```bash
 node index.js
 ```
 
-This will create and start a basic Express server which you can test by going to [http://localhost:9001/hello](http://localhost:9001/hello) in your browser. While this is nice, we will soon want more control over making requests to our server and for this purpose we will start using Postman from the get-go:
+This will create and start a basic Express server which you can test by going to [http://localhost:9001/hello](http://localhost:9001/hello) in your browser. While using the browser is nice, we will soon want more control over making requests to our server and for this purpose we will start using Postman from the get-go:
 
 ![1](images/1.png)
 
 Delete the sole `app.get()` call in `index.js` because it was only for demonstration. Let’s go ahead and make a dedicated `controllers.js` file for our controllers and put the following code in it:
 
-```
+```javascript
 const signup = async (req, res) => {
   return res.status(201).json({
     message: "Signup successful",
@@ -85,7 +82,7 @@ module.exports = {
 
 We need to wire this controller in our routes for it to actually do anything. Modify the `index.js` file so that it looks like this:
 
-```
+```javascript
 const cors = require("cors");
 const express = require("express");
 const controllers = require("./controllers")
@@ -115,7 +112,7 @@ We haven’t written the logic to actually create a new user just yet and we als
 
 Create `db.js` with this in it:
 
-```
+```javascript
 const mongoose = require("mongoose");
 
 mongoose.connect("mongodb://127.0.0.1:27017/2fa");
@@ -136,7 +133,7 @@ require("./models");
 
 This will set up and establish our connection with MongoDB. Next create the missing `models.js` file which we are importing above at the end:
 
-```
+```javascript
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -177,7 +174,7 @@ We use mongoose to simplify our interaction with MongoDB. `UserSchema` contains 
 
 Next up, we will write the logic to create a new user, create `auth.js` with this in it:
 
-```
+```javascript
 const passport = require("passport");
 const extractJwt = require("passport-jwt").ExtractJwt;
 const jwtStrategy = require("passport-jwt").Strategy;
@@ -224,7 +221,7 @@ passport.use(
 
 We are creating a middleware using passport which checks if a user with the requested email already exists, if not then it goes ahead and creates the user with the password hashed with a randomly generated salt. This is what adds the `.user` attribute to the `req` object in the signup controller. Don’t mind the extra imports up top, we will use them shortly. For now, we are missing an environment file which holds sensitive server configuration. Create `env.js` with the following content:
 
-```
+```javascript
 module.exports = {
   JWT_SECRET: "YOUR_TOP_SECRET_KEY_HERE",
 };
@@ -232,7 +229,7 @@ module.exports = {
 
 Now we need to use this newly created middleware with our signup controller. Edit `index.js` and add `passport.authenticate("signup", { session: false })` as the second argument to the `app.post()` call so that it starts acting as a middleware for just the signup controller. It will look like this:
 
-```
+```javascript
 ...
 const passport = require("passport");
 const db = require("./db");
@@ -256,7 +253,7 @@ Note that signing up with the same email again will not work:
 
 Let’s create the login endpoint now. Edit `controllers.js`:
 
-```
+```javascript
 const qrcode = require("qrcode");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
@@ -319,7 +316,7 @@ This controller receives a user object in the parameters which is supplied by th
 
 Create the missing login passport middleware at the end of `auth.js`:
 
-```
+```javascript
 passport.use(
   "login",
   new localStrategy(
@@ -359,7 +356,7 @@ passport.use(
 
 Now simply use the login controller in a route in `index.js` just like before:
 
-```
+```javascript
 ...
 app.post("/api/login", controllers.login);
 ...
@@ -376,7 +373,7 @@ Note that this is the response only when 2FA is not enabled. We will later look 
 Now that we are successfully generating valid authentication JWTs, let’s use them to make a protected `/api/profile`
 route which only logged in users can access. As you can guess, we will be making another passport middleware. This one will check that the JWT coming with the request has been in fact generated with our `JWT_SECRET` i.e. that it is valid. If yes, it will attach a `.user` object with the `req` objects of controllers configured to use this middleware based on the email within the JWT payload. Append this to `auth.js`:
 
-```
+```javascript
 passport.use(
   "jwt",
   new jwtStrategy(
@@ -404,7 +401,7 @@ passport.use(
 
 Next create the profile controller in `controllers.js`:
 
-```
+```javascript
 const profile = async (req, res) => {
   return res.json({
     message: "Success",
@@ -420,7 +417,7 @@ module.exports = {
 
 And add the profile route in `index.js`:
 
-```
+```javascript
 ...
 app.get(
   "/api/profile",
@@ -438,7 +435,7 @@ Try replacing `{{AUTH_TOKEN}}` with an invalid JWT and you will be told you are 
 
 Next up, we will write the two endpoints to enable 2FA for a user. The first endpoint `/api/generate-2fa-secret` will generate and store a 2FA secret for a user. The second endpoint `/api/verify-otp` will verify that the user can successfully generate valid OTPs based on the given 2FA secret (using an authenticator app) and then enable 2FA for the user. Both of these endpoints will be protected i.e. only a logged in user with a valid authentication JWT will be able to use them. In `controllers.js`, add the following code:
 
-```
+```javascript
 const generate2faSecret = async (req, res) => {
   const user = await UserModel.findOne({ email: req.user.email });
 
@@ -499,7 +496,7 @@ module.exports = {
 
 And then connect them with their routes in `index.js`:
 
-```
+```javascript
 ...
 app.post(
   "/api/generate-2fa-secret",
@@ -525,7 +522,7 @@ Now, either input the secret manually in Google Authenticator or display the QR 
 
 Now open this file in a browser and you will see a QR code. Scan this QR code with Google Authenticator and voila! You will start seeing your 2FA OTPs. Alternatively, a short script of our own can be written to do the same job, create `generateAuthenticator2faTokenFromSecret.js`:
 
-```
+```javascript
 const authenticator = require("otplib").authenticator;
 
 const SECRET = process.argv[2];
@@ -552,7 +549,7 @@ main();
 
 Run it with:
 
-```
+```bash
 node generateAuthenticator2faTokenFromSecret.js "<YOUR-2FA-SECRET>"
 ```
 
@@ -566,7 +563,7 @@ After making the request above with the correct time-sensitive OTP, 2FA will be 
 
 Let’s create the login step-2 endpoint now. Make a new controller which will return final authentication JWTs given a valid pairs of a intermediate step-2 verification token and a 2FA OTP:
 
-```
+```javascript
 const loginStep2 = async (req, res) => {
   let loginStep2VerificationToken = null;
   try {
@@ -609,7 +606,7 @@ module.exports = {
 
 Add it to the routes in `index.js`:
 
-```
+```javascript
 ...
 app.post("/api/login-step2", controllers.loginStep2);
 ...
@@ -621,7 +618,7 @@ Login step-2 endpoint is now complete. Restart the server and then in Postman, h
 
 Our backend is now almost complete, now we just need a way to disable 2FA for a user, which turns out to be rather simple. In `controllers.js`:
 
-```
+```javascript
 const disable2fa = async (req, res) => {
   const user = await UserModel.findOne({ email: req.user.email });
   user.twofaEnabled = false;
@@ -642,7 +639,7 @@ module.exports = {
 
 And in `index.js`:
 
-```
+```javascript
 app.post(
   "/api/disable-2fa",
   passport.authenticate("jwt", { session: false }),
@@ -661,4 +658,4 @@ _Coming soon_
 
 ---
 
-_Originally authored by me for [esketchers](https://esketchers.com/) at [esketchers.com/implementing-2fa-with-mern-stack](https://esketchers.com/implementing-2fa-with-mern-stack/)._
+_Originally authored by me for [Esketchers](https://esketchers.com/) at [esketchers.com/implementing-2fa-with-mern-stack](https://esketchers.com/implementing-2fa-with-mern-stack/)._
