@@ -22,7 +22,7 @@ Before starting, make sure you have a recent version of the following installed 
 
 1. [Node.js](https://nodejs.dev/en/learn/how-to-install-nodejs/)
 2. [MongoDB](https://www.mongodb.com/docs/manual/administration/install-community/)
-3. [Postman](https://www.postman.com/downloads/) with [this collection](https://github.com/SalmanFarooqShiekh/2fa/blob/main/backend/postman/Express-2FA.postman_collection.json) imported
+3. [Postman](https://www.postman.com/downloads/) with [this collection](https://github.com/salman-farooq-sh/2fa/blob/main/backend/postman/Express-2FA.postman_collection.json) imported
 4. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) (or a [similar](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai) app)
 
 ## So let’s start!
@@ -654,7 +654,7 @@ Our backend is now complete, restart the server and try the endpoint in Postman:
 
 ![12](images/12.png)
 
-Complete code for the backend is available [here](https://github.com/SalmanFarooqShiekh/2fa/tree/main/backend).
+Complete code for the backend is available [here](https://github.com/salman-farooq-sh/2fa/tree/main/backend).
 
 ## On to the Front-End…
 _Coming soon_
