@@ -6,7 +6,7 @@ Two-factor authentication (2FA), also called multi-factor authentication (MFA), 
 
 In addition to the usual username and password pair, you are required to provide an additional secret code, usually 6-digit long, to log in which you obtain from an authenticator application (e.g. [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) or [this Chrome extension](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai)) installed in your phone or web browser which you have registered with the platform or website you are logging into by simply scanning a QR code. After the initial setup, the authenticator app doesn’t even need to be online to give you the required secret one-time password (OTP). Magic! Right?
 
-As it is with all things in computer science, it turns out it is not magic, rather it is some interesting logic. At the heart of 2FA/MFA, the kind we are going to implement, is a cryptographic algorithm. The algorithm takes as input two things:
+As it is with all things in computer science, it turns out it is not magic, rather it is some interesting logic. At the heart of 2FA/MFA, the kind we are going to implement ([TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password)), is a cryptographic algorithm. This algorithm takes as input two things:
 
 1. The current time on the clock accurate to the second
 2. A user-specific permanent secret key (separate from the OTP, shared securely during setup)
@@ -20,7 +20,7 @@ Before starting, make sure you have a recent version of the following installed 
 1. Node.js
 2. MongoDB
 3. Postman with [this collection](https://github.com/salman-farooq-sh/2fa/blob/main/backend/postman/Express-2FA.postman_collection.json) imported (tip: drag and drop this file in Postman)
-4. Google Authenticator (or any other similar app e.g. [this one](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai), the keyword to search for is "[TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password)")
+4. Google Authenticator (or any other similar app e.g. [this one](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai), the keyword to search for is "TOTP")
 
 ## So let’s start!
 
